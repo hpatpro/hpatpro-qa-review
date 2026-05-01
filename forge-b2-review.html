@@ -161,7 +161,7 @@
   .progress-bar { height: 4px; background: var(--gray-200); margin: 0 30px; border-radius: 2px; }
   .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
 
-  /* S3 Non-Verbal Reasoning — SVG rendering */
+  /* S3 Non-Verbal Reasoning â SVG rendering */
   .visual-asset { margin: 12px 16px; text-align: center; }
   .visual-asset svg { max-width: 100%; height: auto; }
   .s3-stimulus { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 12px 16px; padding: 16px; background: #fafafa; border-radius: 8px; border: 1px solid var(--gray-200); }
@@ -344,7 +344,7 @@
      Fixes DataCloneError caused by supabase-js v2 UMD bundle
      ============================================================ */
   var API_BASE = 'https://hefkyrtmwdtljhmsaacx.supabase.co/rest/v1';
-  var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmt5cnRtd2R0bGpobXNhYWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE2MTksImV4cCI6MjA4Nzk2NzYxOX0.mQJ4mRUTByQzT4qTWr0RnGZ3qsWBHvnQ-7ghTcUPlIk';
+  var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmt5cnRtd2R0bGpobXNhYWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE2MTksImV4cCI6MjA4Nzk2NzYxOX0.mQJ8mRUTByQzT4qTWr0RnGZ3qsWBHvnQ-7ghTcUPlIk';
   var API_HEADERS = {
     'apikey': ANON_KEY,
     'Authorization': 'Bearer ' + ANON_KEY,
@@ -437,7 +437,7 @@
      ============================================================ */
   async function loadAll() {
     try {
-      // Fetch ONLY FORGE-B2 questions (codes starting with FB2-)
+       // Fetch ONLY FORGE-B2 questions (codes starting with FB2-)
       var qs = await sbSelect('questions',
         'select=id,code,section,category,difficulty,difficulty_grade,stimulus_type,stimulus,question_text,options,correct_answer,explanation,has_visual_asset,visual_asset_svg,expected_distractor_attractiveness,option_format' +
         '&is_active=eq.true&code=like.FB2-*&order=section.asc,code.asc');
@@ -539,7 +539,7 @@
   }
 
   /* ============================================================
-     S3 Non-Verbal Reasoning — SVG rendering helpers
+     S3 Non-Verbal Reasoning â SVG rendering helpers
      ============================================================ */
   function isS3Visual(q) {
     return q.section === 'non_verbal_reasoning' && q.has_visual_asset;
@@ -554,7 +554,7 @@
       // QT-B: Frames in a row with arrows, ending in "?"
       html += '<div class="s3-stimulus">';
       (stim.svgs || []).forEach(function(svg, i) {
-        if (i > 0) html += '<span class="s3-arrow">&rarr;</span>';
+          if (i > 0) html += '<span class="s3-arrow">&rarr;</span>';
         html += '<div class="s3-frame">' + svg + '</div>';
       });
       html += '<span class="s3-arrow">&rarr;</span>';
@@ -562,7 +562,7 @@
       html += '</div>';
 
     } else if (stimType === 'grid_3x3' || stimType === 'svg_grid') {
-      // QT-A: 3×3 grid with one missing cell
+      // QT-A: 3Ã3 grid with one missing cell
       html += '<div class="s3-stimulus grid-3x3">';
       var svgs = stim.svgs || [];
       for (var i = 0; i < 9; i++) {
@@ -670,18 +670,18 @@
       html += '<span class="tag tag-batch">' + escHtml(q._batch) + '</span>';
       html += '</div></div>';
 
-      // ── S3 visual item rendering ──
+      // ââ S3 visual item rendering ââ
       if (isS3Visual(q)) {
         // Stem text
         html += '<div class="q-body"><div class="q-text">' + escHtml(q.question_text) + '</div></div>';
         // SVG stimulus (frames / grid / unordered)
         html += renderS3Stimulus(q);
-        // SVG options (A–E as visual cards)
+        // SVG options (AâE as visual cards)
         html += renderS3Options(q);
         // Distractor tags & pattern rules
         html += renderS3Meta(q);
 
-      // ── Standard S1/S2 text rendering ──
+      // ââ Standard S1/S2 text rendering ââ
       } else {
         // Stimulus
         if (q.stimulus && q.stimulus.text) {
