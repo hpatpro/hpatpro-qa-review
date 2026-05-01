@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPATPro &mdash; QA Review (All Questions)</title>
+<style>
+  :root {
+    --navy: #1a365d; --blue: #3182ce; --light-blue: #ebf8ff;
+    --green: #38a169; --red: #e53e3e; --orange: #dd6b20;
+    --gray-50: #f7fafc; --gray-100: #edf2f7; --gray-200: #e2e8f0;
+    --gray-500: #64748b; --gray-700: #374151; --gray-900: #1a202c;
+    --purple: #7c3aed;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-50); color: var(--gray-900); }
+
+  /* Header */
+  .header { background: var(--navy); color: white; padding: 20px 30px; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 22px; margin-bottom: 4px; }
+  .header .subtitle { opacity: 0.92; font-size: 14px; }
+
+  /* Tabs */
+  .tab-bar { display: flex; background: white; border-bottom: 2px solid var(--gray-200); }
+  .tab-btn { padding: 12px 24px; border: none; background: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray-500); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+  .tab-btn:hover { color: var(--navy); }
+  .tab-btn.active { color: var(--navy); border-bottom-color: var(--blue); }
+  .tab-btn .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; margin-left: 6px; font-weight: 700; }
+  .tab-btn .badge-orange { background: #fed7aa; color: #c2410c; }
+  .tab-btn .badge-green { background: #bbf7d0; color: #15803d; }
+
+  /* Tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Stats bar */
+  .stats { display: flex; gap: 20px; padding: 16px 30px; background: white; border-bottom: 1px solid var(--gray-200); flex-wrap: wrap; align-items: center; }
+  .stat { text-align: center; min-width: 80px; }
+  .stat .num { font-size: 24px; font-weight: 700; color: var(--navy); }
+  .stat .label { font-size: 11px; text-transform: uppercase; color: var(--gray-500); letter-spacing: 0.5px; }
+
+  /* Filters */
+  .filters { display: flex; gap: 10px; padding: 12px 30px; background: white; border-bottom: 1px solid var(--gray-200); flex-wrap: wrap; align-items: center; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-group label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .filter-btn { padding: 5px 14px; border: 1px solid var(--gray-200); border-radius: 16px; background: white; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .filter-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .search-box { padding: 6px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 13px; width: 200px; }
+  .reviewer-input { padding: 6px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 13px; width: 160px; }
+  select.batch-select { padding: 5px 10px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 13px; background: white; cursor: pointer; }
+
+  /* Pagination */
+  .pagination { display: flex; gap: 6px; padding: 12px 30px; background: white; border-bottom: 1px solid var(--gray-200); align-items: center; justify-content: center; flex-wrap: wrap; }
+  .page-btn { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; background: white; cursor: pointer; font-size: 13px; }
+  .page-btn:hover { border-color: var(--blue); }
+  .page-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+  .page-info { font-size: 13px; color: var(--gray-500); margin: 0 8px; }
+
+  /* Content */
+  .content { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* Section header */
+  .section-header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 14px 20px; border-radius: 8px; margin: 20px 0 12px; font-size: 16px; font-weight: 600; }
+  .section-header.s1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .section-header.s2 { background: linear-gradient(135deg, #38a169, #2f855a); }
+  .section-header.s3 { background: linear-gradient(135deg, #dd6b20, #c05621); }
+
+  /* Question card */
+  .q-card { background: white; border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .q-card.has-feedback { border-left: 4px solid var(--orange); }
+  .q-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--gray-100); }
+  .q-code { font-weight: 700; font-size: 14px; }
+  .q-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .tag-section { background: #dbeafe; color: #1e40af; }
+  .tag-category { background: #ede9fe; color: #5b21b6; }
+  .tag-diff { background: #fee2e2; color: #991b1b; }
+  .tag-diff.easy { background: #dcfce7; color: #166534; }
+  .tag-diff.medium { background: #fef3c7; color: #92400e; }
+  .tag-batch { background: #e0e7ff; color: #3730a3; }
+
+  /* Stimulus */
+  .stimulus { background: var(--gray-50); border-left: 3px solid var(--blue); padding: 12px 16px; margin: 12px 16px; border-radius: 0 6px 6px 0; font-size: 13px; }
+  .stimulus .stim-label { font-size: 11px; text-transform: uppercase; color: var(--gray-500); font-weight: 600; margin-bottom: 6px; }
+  .stimulus table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  .stimulus th, .stimulus td { border: 1px solid var(--gray-200); padding: 6px 10px; text-align: left; }
+  .stimulus th { background: var(--gray-100); font-weight: 600; }
+
+  /* Question body */
+  .q-body { padding: 12px 16px; }
+  .q-text { font-size: 15px; margin-bottom: 12px; line-height: 1.5; }
+  .options { list-style: none; }
+  .option { padding: 8px 12px; margin: 4px 0; border-radius: 6px; font-size: 14px; display: flex; gap: 8px; }
+  .option .letter { font-weight: 700; min-width: 24px; }
+  .option.correct { background: #f0fff4; border: 1px solid #c6f6d5; }
+
+  /* Explanation */
+  .explanation { background: var(--gray-50); padding: 12px 16px; margin: 0 16px 12px; border-radius: 6px; font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+  .explanation summary { cursor: pointer; font-weight: 600; color: var(--navy); }
+
+  /* Feedback actions */
+  .q-actions { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--gray-100); flex-wrap: wrap; }
+  .action-btn { padding: 6px 14px; border: 1px solid var(--gray-200); border-radius: 6px; cursor: pointer; font-size: 13px; background: white; transition: all 0.15s; }
+  .action-btn:hover { border-color: var(--blue); }
+  .action-btn.approve { color: var(--green); }
+  .action-btn.approve:hover, .action-btn.approve.selected { background: var(--green); color: white; }
+  .action-btn.flag { color: var(--red); }
+  .action-btn.flag:hover, .action-btn.flag.selected { background: var(--red); color: white; }
+  .action-btn.edit { color: var(--orange); }
+  .action-btn.edit:hover, .action-btn.edit.selected { background: var(--orange); color: white; }
+
+  /* Feedback form */
+  .feedback-form { padding: 12px 16px; border-top: 1px solid var(--gray-100); display: none; }
+  .feedback-form.visible { display: block; }
+  .feedback-form textarea { width: 100%; padding: 8px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 13px; min-height: 60px; resize: vertical; font-family: inherit; }
+  .feedback-form .form-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .submit-btn { padding: 6px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; background: var(--blue); color: white; }
+  .submit-btn:hover { opacity: 0.9; }
+  .cancel-btn { padding: 6px 16px; border: 1px solid var(--gray-200); border-radius: 6px; cursor: pointer; font-size: 13px; background: white; }
+
+  /* Existing feedback badge */
+  .existing-feedback { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 6px; padding: 8px 12px; margin: 8px 16px; font-size: 12px; }
+  .existing-feedback .fb-type { font-weight: 600; text-transform: capitalize; }
+
+  /* Feedback triage panel */
+  .triage-panel { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .triage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .triage-header h2 { font-size: 18px; color: var(--navy); }
+  .triage-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .triage-card { background: white; border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .triage-card-header { padding: 12px 16px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .triage-meta { font-size: 13px; color: var(--gray-500); }
+  .triage-body { padding: 12px 16px; font-size: 14px; line-height: 1.5; }
+  .triage-body .fb-question-code { font-weight: 700; color: var(--navy); cursor: pointer; text-decoration: underline; }
+  .triage-actions { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--gray-100); }
+  .triage-btn { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; cursor: pointer; font-size: 12px; background: white; transition: all 0.15s; }
+  .triage-btn.resolve { color: var(--green); }
+  .triage-btn.resolve:hover { background: var(--green); color: white; }
+  .triage-btn.dismiss { color: var(--gray-500); }
+  .triage-btn.dismiss:hover { background: var(--gray-500); color: white; }
+  .triage-empty { text-align: center; padding: 40px; color: var(--gray-500); font-size: 15px; }
+  .fb-type-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .fb-type-badge.approve { background: #dcfce7; color: #16a34a; }
+  .fb-type-badge.flag_issue { background: #fee2e2; color: #dc2626; }
+  .fb-type-badge.suggest_edit { background: #fef3c7; color: #d97706; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 1000; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  /* Loading */
+  .loading { text-align: center; padding: 60px; color: var(--gray-500); }
+  .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Progress bar */
+  .progress-bar { height: 4px; background: var(--gray-200); margin: 0 30px; border-radius: 2px; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
+
+  /* S3 Non-Verbal Reasoning — SVG rendering */
+  .visual-asset { margin: 12px 16px; text-align: center; }
+  .visual-asset svg { max-width: 100%; height: auto; }
+  .s3-stimulus { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 12px 16px; padding: 16px; background: #fafafa; border-radius: 8px; border: 1px solid var(--gray-200); }
+  .s3-stimulus.grid-3x3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 440px; margin: 12px auto; padding: 16px; }
+  .s3-frame { width: 120px; height: 120px; border: 2px solid #ccc; border-radius: 6px; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .s3-frame svg { width: 100%; height: 100%; }
+  .s3-frame.missing { border: 3px dashed var(--red); background: #fff5f5; }
+  .s3-frame.missing span { font-size: 36px; color: var(--red); font-weight: bold; }
+  .s3-arrow { font-size: 24px; color: #aaa; flex-shrink: 0; }
+  .s3-options { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 12px 16px; padding: 12px 0; }
+  .s3-option { text-align: center; }
+  .s3-option-label { font-weight: 700; font-size: 13px; color: #555; margin-bottom: 4px; }
+  .s3-option .s3-frame { width: 100px; height: 100px; border: 2px solid #ddd; transition: border-color 0.15s; }
+  .s3-option.correct .s3-frame { border-color: var(--green); border-width: 3px; background: #f0fff4; }
+  .s3-option.correct .s3-option-label { color: var(--green); }
+  .s3-meta { margin: 8px 16px; padding: 10px 12px; background: #f8f9fa; border-radius: 6px; font-size: 12px; }
+  .s3-meta summary { cursor: pointer; font-weight: 600; color: var(--navy); font-size: 13px; }
+  .s3-meta table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .s3-meta td, .s3-meta th { padding: 4px 8px; border: 1px solid var(--gray-200); text-align: left; font-size: 12px; }
+  .s3-meta th { background: var(--gray-100); font-weight: 600; }
+  .s3-meta code { background: #e2e8f0; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+  @media (max-width: 600px) {
+    .s3-frame { width: 90px; height: 90px; }
+    .s3-option .s3-frame { width: 70px; height: 70px; }
+    .s3-stimulus { gap: 4px; padding: 8px; }
+    .s3-options { gap: 6px; }
+    .s3-stimulus.grid-3x3 { max-width: 300px; }
+  }
+
+  /* Skip nav */
+  .skip-nav { position: absolute; left: -9999px; top: 0; z-index: 999; padding: 8px 16px; background: var(--navy); color: white; font-size: 14px; text-decoration: none; }
+  .skip-nav:focus { left: 0; }
+
+  /* Responsive: Tablet */
+  @media (max-width: 768px) {
+    .header { padding: 14px 16px; }
+    .header h1 { font-size: 18px; }
+    .stats { padding: 12px 16px; gap: 12px; justify-content: center; }
+    .stat .num { font-size: 20px; }
+    .filters { padding: 10px 16px; gap: 8px; }
+    .filter-btn { padding: 4px 10px; font-size: 12px; }
+    .search-box { width: 140px; }
+    .content { padding: 12px; }
+    .pagination { padding: 10px 16px; }
+    .triage-panel { padding: 12px; }
+  }
+
+  /* Responsive: Mobile */
+  @media (max-width: 480px) {
+    .header h1 { font-size: 16px; }
+    .header .subtitle { font-size: 12px; }
+    .stats { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    .stat { min-width: 60px; flex: 1 1 30%; }
+    .stat .num { font-size: 18px; }
+    .stat .label { font-size: 10px; }
+    .filters { flex-direction: column; align-items: stretch; padding: 8px 12px; }
+    .filter-group { flex-wrap: wrap; }
+    .filter-btn { padding: 4px 8px; font-size: 11px; }
+    .search-box, .reviewer-input { width: 100%; }
+    .content { padding: 8px; }
+    .q-card-header { flex-direction: column; gap: 6px; align-items: flex-start; }
+    .q-tags { flex-wrap: wrap; }
+    .q-body { padding: 10px 12px; }
+    .q-text { font-size: 14px; }
+    .option { font-size: 13px; padding: 6px 10px; }
+    .q-actions { flex-wrap: wrap; }
+    .section-header { font-size: 14px; padding: 10px 14px; }
+    .pagination { flex-wrap: wrap; gap: 4px; }
+    .page-btn { padding: 4px 8px; font-size: 12px; }
+    .tab-btn { padding: 10px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<header class="header" role="banner">
+  <h1>HPATPro &mdash; QA Review</h1>
+  <div class="subtitle">Full question bank review &bull; Updated 21 April 2026 &bull; <span id="totalCount">Loading&hellip;</span> questions &bull; <span id="feedbackCount">0</span> feedback items</div>
+</header>
+
+<!-- Tab navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="questions" id="tabQuestions">Questions <span class="badge badge-green" id="tabQCount"></span></button>
+  <button class="tab-btn" data-tab="triage" id="tabTriage">Feedback Triage <span class="badge badge-orange" id="tabFbCount">0</span></button>
+</div>
+
+<!-- QUESTIONS TAB -->
+<div class="tab-panel active" id="panelQuestions">
+
+<div class="stats" id="statsBar">
+  <div class="stat"><div class="num" id="statTotal">&mdash;</div><div class="label">Total</div></div>
+  <div class="stat"><div class="num" id="statS1">&mdash;</div><div class="label">S1 Logical</div></div>
+  <div class="stat"><div class="num" id="statS2">&mdash;</div><div class="label">S2 Interpersonal</div></div>
+  <div class="stat"><div class="num" id="statS3">&mdash;</div><div class="label">S3 Non-Verbal</div></div>
+  <div class="stat"><div class="num" id="statReviewed" style="color:var(--green)">0</div><div class="label">Reviewed</div></div>
+  <div class="stat"><div class="num" id="statFlagged" style="color:var(--red)">0</div><div class="label">Flagged</div></div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<nav class="filters" role="navigation" aria-label="Question filters">
+  <div class="filter-group">
+    <label>Batch:</label>
+    <select class="batch-select" id="batchSelect">
+      <option value="all">All batches</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Section:</label>
+    <button class="filter-btn active" data-filter="section" data-value="all">All</button>
+    <button class="filter-btn" data-filter="section" data-value="logical_reasoning">S1</button>
+    <button class="filter-btn" data-filter="section" data-value="interpersonal_understanding">S2</button>
+    <button class="filter-btn" data-filter="section" data-value="non_verbal_reasoning">S3</button>
+  </div>
+  <div class="filter-group">
+    <label>Difficulty:</label>
+    <button class="filter-btn active" data-filter="diff" data-value="all">All</button>
+    <button class="filter-btn" data-filter="diff" data-value="easy">Easy</button>
+    <button class="filter-btn" data-filter="diff" data-value="medium">Medium</button>
+    <button class="filter-btn" data-filter="diff" data-value="hard">Hard</button>
+  </div>
+  <div class="filter-group">
+    <label>Status:</label>
+    <button class="filter-btn active" data-filter="status" data-value="all">All</button>
+    <button class="filter-btn" data-filter="status" data-value="unreviewed">Unreviewed</button>
+    <button class="filter-btn" data-filter="status" data-value="flagged">Flagged</button>
+  </div>
+  <div class="filter-group">
+    <input type="text" class="search-box" id="searchBox" placeholder="Search code or text&hellip;">
+  </div>
+  <div class="filter-group">
+    <label>Reviewer:</label>
+    <input type="text" class="reviewer-input" id="reviewerName" placeholder="Your name" value="">
+  </div>
+</nav>
+
+<div class="pagination" id="pagination"></div>
+
+<main id="main-content" role="main">
+<div class="content" id="questionsContainer">
+  <div class="loading"><div class="spinner"></div><p style="margin-top:12px">Loading all questions&hellip;</p></div>
+</div>
+
+<div class="pagination" id="paginationBottom"></div>
+</main>
+
+</div><!-- end panelQuestions -->
+
+<!-- FEEDBACK TRIAGE TAB -->
+<div class="tab-panel" id="panelTriage">
+  <div class="triage-panel" id="triageContainer">
+    <div class="loading"><div class="spinner"></div><p style="margin-top:12px">Loading feedback&hellip;</p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<!-- SVG Pattern Definitions for S3 (shared, invisible) -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+<defs>
+  <pattern id="pat-dots" width="8" height="8" patternUnits="userSpaceOnUse">
+    <circle cx="4" cy="4" r="1.8" fill="#2c3e50"/>
+  </pattern>
+  <pattern id="pat-stripes" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="5" stroke="#2c3e50" stroke-width="2"/>
+  </pattern>
+  <pattern id="pat-checks" width="6" height="6" patternUnits="userSpaceOnUse">
+    <line x1="0" y1="0" x2="6" y2="6" stroke="#2c3e50" stroke-width="1"/>
+    <line x1="6" y1="0" x2="0" y2="6" stroke="#2c3e50" stroke-width="1"/>
+  </pattern>
+</defs>
+</svg>
+
+<script>
+(function() {
+  /* ============================================================
+     Supabase REST API (raw fetch &mdash; no JS client library)
+     Fixes DataCloneError caused by supabase-js v2 UMD bundle
+     ============================================================ */
+  var API_BASE = 'https://hefkyrtmwdtljhmsaacx.supabase.co/rest/v1';
+  var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmt5cnRtd2R0bGpobXNhYWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTE2MTksImV4cCI6MjA4Nzk2NzYxOX0.mQJ8mRUTByQzT4qTWr0RnGZ3qsWBHvnQ-7ghTcUPlIk';
+  var API_HEADERS = {
+    'apikey': ANON_KEY,
+    'Authorization': 'Bearer ' + ANON_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  function sbSelect(table, params) {
+    return fetch(API_BASE + '/' + table + '?' + params, { headers: API_HEADERS })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); });
+  }
+
+  function sbInsert(table, data) {
+    return fetch(API_BASE + '/' + table, {
+      method: 'POST', headers: API_HEADERS, body: JSON.stringify(data)
+    }).then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); });
+  }
+
+  function sbUpdate(table, id, data) {
+    return fetch(API_BASE + '/' + table + '?id=eq.' + id, {
+      method: 'PATCH', headers: API_HEADERS, body: JSON.stringify(data)
+    }).then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); });
+  }
+
+  /* ============================================================
+     State
+     ============================================================ */
+  var allQuestions = [];
+  var allFeedback = [];
+  var filteredQuestions = [];
+  var currentPage = 1;
+  var perPage = 25;
+  var filters = { section: 'all', diff: 'all', status: 'all', search: '', batch: 'all' };
+  var reviewedSet = new Set();
+  var flaggedSet = new Set();
+  var batchMap = {};    // { batchLabel: [questionCode, ...] }
+  var batchLabels = []; // sorted batch names
+
+  // Saved reviewer name (in-memory only, no localStorage to avoid issues)
+  var savedReviewer = '';
+
+  /* ============================================================
+     Batch detection: derive batch from question code patterns
+     ============================================================ */
+  function detectBatch(code) {
+    if (!code) return 'Unknown';
+    // S1-SCR-026 to S1-SCR-030 pattern
+    if (code.indexOf('SCR') !== -1) {
+      var numMatch = code.match(/SCR-(\d+)/);
+      if (numMatch) {
+        var n = parseInt(numMatch[1], 10);
+        if (n >= 26 && n <= 30) return 'SCR Batch 2 (026&ndash;030)';
+        if (n >= 1 && n <= 25) return 'SCR Batch 1 (001&ndash;025)';
+        return 'SCR Batch ' + Math.ceil(n / 25);
+      }
+      return 'SCR (unclassified)';
+    }
+    // S2 pilot codes
+    if (code.indexOf('S2-') === 0) return 'S2 Pilot';
+    // S3 codes
+    if (code.indexOf('S3-') === 0) return 'S3 Batch';
+    // Default S1 non-SCR = original V4.3 batch
+    if (code.indexOf('S1-') === 0) return 'S1 Original (V4.3)';
+    return 'Other';
+  }
+
+  function buildBatchMap() {
+    batchMap = {};
+    allQuestions.forEach(function(q) {
+      var b = detectBatch(q.code);
+      q._batch = b;
+      if (!batchMap[b]) batchMap[b] = [];
+      batchMap[b].push(q.code);
+    });
+    batchLabels = Object.keys(batchMap).sort();
+
+    // Populate dropdown
+    var sel = document.getElementById('batchSelect');
+    sel.innerHTML = '<option value="all">All batches (' + allQuestions.length + ')</option>';
+    batchLabels.forEach(function(label) {
+      var opt = document.createElement('option');
+      opt.value = label;
+      opt.textContent = label + ' (' + batchMap[label].length + ')';
+      sel.appendChild(opt);
+    });
+  }
+
+  /* ============================================================
+     Load all data
+     ============================================================ */
+  async function loadAll() {
+    try {
+       // Fetch all active questions (REST API, order by section then code)
+      var qs = await sbSelect('questions',
+        'select=id,code,section,category,difficulty,difficulty_grade,stimulus_type,stimulus,question_text,options,correct_answer,explanation,has_visual_asset,visual_asset_svg,expected_distractor_attractiveness,option_format' +
+        '&is_active=eq.true&order=section.asc,code.asc');
+      allQuestions = qs || [];
+
+      // Fetch all feedback (most recent first)
+      var fbs = await sbSelect('qa_feedback',
+        'select=*&order=created_at.desc');
+      allFeedback = fbs || [];
+
+      // Build sets
+      allFeedback.forEach(function(fb) {
+        reviewedSet.add(fb.question_code);
+        if (fb.feedback_type === 'flag_issue' && fb.status === 'pending') flaggedSet.add(fb.question_code);
+      });
+
+      buildBatchMap();
+      updateStats();
+      applyFilters();
+      renderTriage();
+    } catch(err) {
+      document.getElementById('questionsContainer').innerHTML =
+        '<div class="loading" style="color:var(--red)">Error loading questions: ' + escHtml(err.message) + '</div>';
+    }
+  }
+
+  /* ============================================================
+     Stats
+     ============================================================ */
+  function updateStats() {
+    var s1 = allQuestions.filter(function(q) { return q.section === 'logical_reasoning'; }).length;
+    var s2 = allQuestions.filter(function(q) { return q.section === 'interpersonal_understanding'; }).length;
+    var s3 = allQuestions.filter(function(q) { return q.section === 'non_verbal_reasoning'; }).length;
+    document.getElementById('statTotal').textContent = allQuestions.length;
+    document.getElementById('statS1').textContent = s1;
+    document.getElementById('statS2').textContent = s2;
+    document.getElementById('statS3').textContent = s3;
+    document.getElementById('statReviewed').textContent = reviewedSet.size;
+    document.getElementById('statFlagged').textContent = flaggedSet.size;
+    document.getElementById('totalCount').textContent = allQuestions.length;
+    document.getElementById('feedbackCount').textContent = allFeedback.length;
+    document.getElementById('tabQCount').textContent = allQuestions.length;
+
+    var pendingFb = allFeedback.filter(function(f) { return f.status === 'pending'; }).length;
+    document.getElementById('tabFbCount').textContent = pendingFb;
+
+    var pct = allQuestions.length > 0 ? Math.round((reviewedSet.size / allQuestions.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  /* ============================================================
+     Filters + Pagination + Rendering (Questions tab)
+     ============================================================ */
+  function applyFilters() {
+    filteredQuestions = allQuestions.filter(function(q) {
+      if (filters.section !== 'all' && q.section !== filters.section) return false;
+      if (filters.diff !== 'all' && q.difficulty !== filters.diff) return false;
+      if (filters.batch !== 'all' && q._batch !== filters.batch) return false;
+      if (filters.status === 'unreviewed' && reviewedSet.has(q.code)) return false;
+      if (filters.status === 'flagged' && !flaggedSet.has(q.code)) return false;
+      if (filters.search) {
+        var s = filters.search.toLowerCase();
+        if (q.code.toLowerCase().indexOf(s) === -1 &&
+            q.question_text.toLowerCase().indexOf(s) === -1 &&
+            (q.category || '').toLowerCase().indexOf(s) === -1) return false;
+      }
+      return true;
+    });
+    currentPage = 1;
+    renderPagination();
+    renderQuestions();
+  }
+
+  function renderPagination() {
+    var totalPages = Math.ceil(filteredQuestions.length / perPage) || 1;
+    var html = '';
+    html += '<button class="page-btn" onclick="window._qa.goPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>&laquo; Prev</button>';
+
+    var start = Math.max(1, currentPage - 3);
+    var end = Math.min(totalPages, currentPage + 3);
+    if (start > 1) html += '<button class="page-btn" onclick="window._qa.goPage(1)">1</button><span class="page-info">&hellip;</span>';
+    for (var i = start; i <= end; i++) {
+      html += '<button class="page-btn' + (i === currentPage ? ' active' : '') + '" onclick="window._qa.goPage(' + i + ')">' + i + '</button>';
+    }
+    if (end < totalPages) html += '<span class="page-info">&hellip;</span><button class="page-btn" onclick="window._qa.goPage(' + totalPages + ')">' + totalPages + '</button>';
+
+    html += '<button class="page-btn" onclick="window._qa.goPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next &raquo;</button>';
+    var showStart = filteredQuestions.length > 0 ? ((currentPage-1)*perPage+1) : 0;
+    var showEnd = Math.min(currentPage*perPage, filteredQuestions.length);
+    html += '<span class="page-info">Showing ' + showStart + '&ndash;' + showEnd + ' of ' + filteredQuestions.length + '</span>';
+
+    document.getElementById('pagination').innerHTML = html;
+    document.getElementById('paginationBottom').innerHTML = html;
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ============================================================
+     S3 Non-Verbal Reasoning — SVG rendering helpers
+     ============================================================ */
+  function isS3Visual(q) {
+    return q.section === 'non_verbal_reasoning' && q.has_visual_asset;
+  }
+
+  function renderS3Stimulus(q) {
+    var stim = q.stimulus || {};
+    var stimType = stim.type || q.stimulus_type || '';
+    var html = '';
+
+    if (stimType === 'sequence' || stimType === 'svg_sequence' || stimType === 'sequence_3' || stimType === 'sequence_4') {
+      // QT-B: Frames in a row with arrows, ending in "?"
+      html += '<div class="s3-stimulus">';
+      (stim.svgs || []).forEach(function(svg, i) {
+          if (i > 0) html += '<span class="s3-arrow">&rarr;</span>';
+        html += '<div class="s3-frame">' + svg + '</div>';
+      });
+      html += '<span class="s3-arrow">&rarr;</span>';
+      html += '<div class="s3-frame missing"><span>?</span></div>';
+      html += '</div>';
+
+    } else if (stimType === 'grid_3x3' || stimType === 'svg_grid') {
+      // QT-A: 3×3 grid with one missing cell
+      html += '<div class="s3-stimulus grid-3x3">';
+      var svgs = stim.svgs || [];
+      for (var i = 0; i < 9; i++) {
+        if (svgs[i] === null || svgs[i] === undefined || svgs[i] === '') {
+          html += '<div class="s3-frame missing"><span>?</span></div>';
+        } else {
+          html += '<div class="s3-frame">' + svgs[i] + '</div>';
+        }
+      }
+      html += '</div>';
+
+    } else if (stimType === 'unordered' || stimType === 'svg_unordered' || stimType === 'middle_term' || stimType === 'unordered_set') {
+      // QT-C: Unordered images with letter labels
+      html += '<div class="s3-stimulus">';
+      var svgsData = stim.svgs || [];
+      if (Array.isArray(svgsData)) {
+        // New format: array of SVG strings
+        var labels = ['A','B','C','D','E','F','G','H'];
+        svgsData.forEach(function(svg, i) {
+          html += '<div class="s3-frame" style="position:relative">';
+          html += '<span style="position:absolute;top:2px;left:6px;font-size:11px;font-weight:700;color:#999">' + escHtml(labels[i] || String(i+1)) + '</span>';
+          html += svg;
+          html += '</div>';
+        });
+      } else if (typeof svgsData === 'object') {
+        // Legacy format: object with named keys {A: "...", B: "..."}
+        var skeys = Object.keys(svgsData).sort();
+        skeys.forEach(function(key) {
+          html += '<div class="s3-frame" style="position:relative">';
+          html += '<span style="position:absolute;top:2px;left:6px;font-size:11px;font-weight:700;color:#999">' + escHtml(key) + '</span>';
+          html += svgsData[key];
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+    }
+
+    return html;
+  }
+
+  function renderS3Options(q) {
+    var html = '<div class="s3-options">';
+    var letters = Object.keys(q.options || {}).sort();
+    letters.forEach(function(letter) {
+      var isCorrect = letter === q.correct_answer;
+      var optVal = q.options[letter];
+      html += '<div class="s3-option' + (isCorrect ? ' correct' : '') + '">';
+      html += '<div class="s3-option-label">' + escHtml(letter) + (isCorrect ? ' &#10003;' : '') + '</div>';
+      html += '<div class="s3-frame">' + optVal + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderS3Meta(q) {
+    var html = '';
+    var dist = q.expected_distractor_attractiveness;
+    if (dist && typeof dist === 'object') {
+      html += '<details class="s3-meta"><summary>Distractor Tags &amp; Pattern Rules</summary>';
+      html += '<table><tr><th>Option</th><th>Tag</th><th>Note</th></tr>';
+      var letters = Object.keys(dist).sort();
+      letters.forEach(function(letter) {
+        var d = dist[letter];
+        var tag = typeof d === 'object' ? (d.tag || '') : d;
+        var note = typeof d === 'object' ? (d.note || '') : '';
+        html += '<tr><td><strong>' + escHtml(letter) + '</strong></td>';
+        html += '<td><code>' + escHtml(tag) + '</code></td>';
+        html += '<td>' + escHtml(note) + '</td></tr>';
+      });
+      html += '</table></details>';
+    }
+    return html;
+  }
+
+  function renderQuestions() {
+    var start = (currentPage - 1) * perPage;
+    var pageQs = filteredQuestions.slice(start, start + perPage);
+    var html = '';
+    var lastSection = '';
+
+    pageQs.forEach(function(q, idx) {
+      // Section header
+      if (q.section !== lastSection) {
+        lastSection = q.section;
+        var sClass = q.section === 'logical_reasoning' ? 's1' : q.section === 'interpersonal_understanding' ? 's2' : 's3';
+        var sLabel = q.section === 'logical_reasoning' ? 'S1 &mdash; Logical Reasoning' : q.section === 'interpersonal_understanding' ? 'S2 &mdash; Interpersonal Understanding' : 'S3 &mdash; Non-Verbal Reasoning';
+        var sCount = filteredQuestions.filter(function(fq) { return fq.section === q.section; }).length;
+        html += '<div class="section-header ' + sClass + '">' + sLabel + ' (' + sCount + ' questions)</div>';
+      }
+
+      var hasFb = reviewedSet.has(q.code);
+      var qFeedback = allFeedback.filter(function(fb) { return fb.question_code === q.code; });
+      var diffClass = q.difficulty === 'easy' ? 'easy' : q.difficulty === 'medium' ? 'medium' : '';
+
+      html += '<div class="q-card' + (hasFb ? ' has-feedback' : '') + '" id="q-' + escHtml(q.code) + '">';
+
+      // Header
+      html += '<div class="q-card-header">';
+      html += '<span class="q-code">#' + (start + idx + 1) + ' &mdash; ' + escHtml(q.code) + '</span>';
+      html += '<div class="q-tags">';
+      html += '<span class="tag tag-section">' + (q.section === 'logical_reasoning' ? 'S1' : q.section === 'interpersonal_understanding' ? 'S2' : 'S3') + '</span>';
+      if (q.category) html += '<span class="tag tag-category">' + escHtml(q.category) + '</span>';
+      html += '<span class="tag tag-diff ' + diffClass + '">' + escHtml(q.difficulty ? q.difficulty.toUpperCase() : '') + ' (' + q.difficulty_grade + ')</span>';
+      html += '<span class="tag tag-batch">' + escHtml(q._batch) + '</span>';
+      html += '</div></div>';
+
+      // ── S3 visual item rendering ──
+      if (isS3Visual(q)) {
+        // Stem text
+        html += '<div class="q-body"><div class="q-text">' + escHtml(q.question_text) + '</div></div>';
+        // SVG stimulus (frames / grid / unordered)
+        html += renderS3Stimulus(q);
+        // SVG options (A–E as visual cards)
+        html += renderS3Options(q);
+        // Distractor tags & pattern rules
+        html += renderS3Meta(q);
+
+      // ── Standard S1/S2 text rendering ──
+      } else {
+        // Stimulus
+        if (q.stimulus && q.stimulus.text) {
+          html += '<div class="stimulus"><div class="stim-label">' + escHtml((q.stimulus_type || 'stimulus').replace(/_/g, ' ')) + '</div>' + q.stimulus.text + '</div>';
+        }
+        // Legacy visual asset fallback
+        if (q.has_visual_asset && q.visual_asset_svg) {
+          html += '<div class="visual-asset">' + q.visual_asset_svg + '</div>';
+        }
+        // Question body + text options
+        html += '<div class="q-body">';
+        html += '<div class="q-text">' + escHtml(q.question_text) + '</div>';
+        html += '<div class="options">';
+        if (q.options) {
+          var letters = Object.keys(q.options).sort();
+          letters.forEach(function(letter) {
+            var isCorrect = letter === q.correct_answer;
+            html += '<div class="option' + (isCorrect ? ' correct' : '') + '">';
+            html += '<span class="letter">' + escHtml(letter) + '.</span>';
+            html += '<span>' + escHtml(q.options[letter]) + (isCorrect ? ' &#10003;' : '') + '</span>';
+            html += '</div>';
+          });
+        }
+        html += '</div></div>';
+      }
+
+      // Explanation (both S1/S2 and S3)
+      html += '<details class="explanation"><summary>View Explanation</summary><p style="margin-top:8px">' + escHtml(q.explanation || 'No explanation available.') + '</p></details>';
+
+      // Existing feedback
+      if (qFeedback.length > 0) {
+        qFeedback.forEach(function(fb) {
+          html += '<div class="existing-feedback">';
+          html += '<span class="fb-type">' + escHtml((fb.feedback_type || '').replace(/_/g, ' ')) + '</span>';
+          html += ' by <strong>' + escHtml(fb.reviewer_name) + '</strong>';
+          html += ' (' + escHtml(fb.status) + ')';
+          if (fb.comment) html += ': ' + escHtml(fb.comment);
+          html += '</div>';
+        });
+      }
+
+      // Action buttons
+      html += '<div class="q-actions">';
+      html += '<button class="action-btn approve" onclick="window._qa.feedback(\'' + escHtml(q.code) + '\',\'' + q.id + '\',\'approve\',this)">Approve</button>';
+      html += '<button class="action-btn flag" onclick="window._qa.feedback(\'' + escHtml(q.code) + '\',\'' + q.id + '\',\'flag_issue\',this)">Flag Issue</button>';
+      html += '<button class="action-btn edit" onclick="window._qa.showForm(\'' + escHtml(q.code) + '\',\'' + q.id + '\')">Suggest Edit</button>';
+      html += '</div>';
+
+      // Feedback form (hidden)
+      html += '<div class="feedback-form" id="form-' + escHtml(q.code) + '">';
+      html += '<textarea id="comment-' + escHtml(q.code) + '" placeholder="Describe the issue or suggested change&hellip;"></textarea>';
+      html += '<div class="form-actions">';
+      html += '<button class="submit-btn" onclick="window._qa.submitForm(\'' + escHtml(q.code) + '\',\'' + q.id + '\')">Submit Feedback</button>';
+      html += '<button class="cancel-btn" onclick="window._qa.hideForm(\'' + escHtml(q.code) + '\')">Cancel</button>';
+      html += '</div></div>';
+
+      html += '</div>';
+    });
+
+    if (pageQs.length === 0) {
+      html = '<div class="loading">No questions match the current filters.</div>';
+    }
+
+    document.getElementById('questionsContainer').innerHTML = html;
+    window.scrollTo(0, 0);
+  }
+
+  /* ============================================================
+     Feedback Triage Tab
+     ============================================================ */
+  var triageFilter = 'pending'; // 'pending', 'applied', 'dismissed', 'all'
+
+  function renderTriage() {
+    var container = document.getElementById('triageContainer');
+    var filtered = allFeedback;
+    if (triageFilter !== 'all') {
+      filtered = allFeedback.filter(function(f) { return f.status === triageFilter; });
+    }
+
+    var html = '';
+    html += '<div class="triage-header">';
+    html += '<h2>Feedback Triage (' + filtered.length + ' items)</h2>';
+    html += '<div class="triage-filters">';
+    html += '<button class="filter-btn' + (triageFilter === 'pending' ? ' active' : '') + '" onclick="window._qa.setTriageFilter(\'pending\')">Pending (' + allFeedback.filter(function(f){return f.status==='pending';}).length + ')</button>';
+    html += '<button class="filter-btn' + (triageFilter === 'applied' ? ' active' : '') + '" onclick="window._qa.setTriageFilter(\'applied\')">Applied (' + allFeedback.filter(function(f){return f.status==='applied';}).length + ')</button>';
+    html += '<button class="filter-btn' + (triageFilter === 'reviewed' ? ' active' : '') + '" onclick="window._qa.setTriageFilter(\'reviewed\')">Reviewed (' + allFeedback.filter(function(f){return f.status==='reviewed';}).length + ')</button>';
+    html += '<button class="filter-btn' + (triageFilter === 'dismissed' ? ' active' : '') + '" onclick="window._qa.setTriageFilter(\'dismissed\')">Dismissed (' + allFeedback.filter(function(f){return f.status==='dismissed';}).length + ')</button>';
+    html += '<button class="filter-btn' + (triageFilter === 'all' ? ' active' : '') + '" onclick="window._qa.setTriageFilter(\'all\')">All (' + allFeedback.length + ')</button>';
+    html += '</div></div>';
+
+    if (filtered.length === 0) {
+      html += '<div class="triage-empty">No ' + (triageFilter === 'all' ? '' : triageFilter + ' ') + 'feedback items found.</div>';
+    }
+
+    filtered.forEach(function(fb) {
+      var typeClass = (fb.feedback_type || '').replace(/ /g, '_');
+      var dateStr = fb.created_at ? new Date(fb.created_at).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+      html += '<div class="triage-card">';
+      html += '<div class="triage-card-header">';
+      html += '<div>';
+      html += '<span class="fb-question-code" onclick="window._qa.jumpToQuestion(\'' + escHtml(fb.question_code) + '\')">' + escHtml(fb.question_code) + '</span>';
+      html += ' &mdash; ';
+      html += '<span class="fb-type-badge ' + escHtml(typeClass) + '">' + escHtml((fb.feedback_type || '').replace(/_/g, ' ')) + '</span>';
+      html += '</div>';
+      html += '<div class="triage-meta">' + escHtml(fb.reviewer_name) + ' &bull; ' + dateStr + ' &bull; <em>' + escHtml(fb.status) + '</em></div>';
+      html += '</div>';
+
+      if (fb.comment) {
+        html += '<div class="triage-body">' + escHtml(fb.comment) + '</div>';
+      }
+
+      if (fb.status === 'pending') {
+        html += '<div class="triage-actions">';
+        html += '<button class="triage-btn resolve" onclick="window._qa.triageAction(\'' + fb.id + '\',\'applied\')">&#10003; Applied</button>';
+        html += '<button class="triage-btn dismiss" onclick="window._qa.triageAction(\'' + fb.id + '\',\'dismissed\')">&times; Dismiss</button>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  /* ============================================================
+     Feedback submission
+     ============================================================ */
+  async function submitFeedback(code, qId, type, comment) {
+    var reviewer = document.getElementById('reviewerName').value.trim();
+    if (!reviewer) { showToast('Please enter your name first', 'error'); return; }
+    savedReviewer = reviewer;
+
+    try {
+      var result = await sbInsert('qa_feedback', {
+        question_id: qId,
+        question_code: code,
+        reviewer_name: reviewer,
+        feedback_type: type,
+        comment: comment || (type === 'approve' ? 'Approved' : ''),
+        status: 'pending'
+      });
+
+      reviewedSet.add(code);
+      if (type === 'flag_issue') flaggedSet.add(code);
+
+      var newFb = (result && result[0]) ? result[0] : {
+        id: 'local-' + Date.now(),
+        question_code: code,
+        question_id: qId,
+        reviewer_name: reviewer,
+        feedback_type: type,
+        comment: comment || (type === 'approve' ? 'Approved' : ''),
+        status: 'pending',
+        created_at: new Date().toISOString()
+      };
+      allFeedback.unshift(newFb);
+
+      updateStats();
+      renderQuestions();
+      renderTriage();
+      showToast('Feedback submitted for ' + code, 'success');
+    } catch(err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================================
+     Triage actions (resolve / dismiss)
+     ============================================================ */
+  async function triageAction(fbId, newStatus) {
+    try {
+      await sbUpdate('qa_feedback', fbId, { status: newStatus });
+
+      // Update local state
+      var fb = allFeedback.find(function(f) { return f.id === fbId; });
+      if (fb) {
+        fb.status = newStatus;
+        // Rebuild flagged set
+        flaggedSet = new Set();
+        allFeedback.forEach(function(f) {
+          if (f.feedback_type === 'flag_issue' && f.status === 'pending') flaggedSet.add(f.question_code);
+        });
+      }
+
+      updateStats();
+      renderTriage();
+      renderQuestions();
+      showToast('Feedback ' + newStatus, 'success');
+    } catch(err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================================
+     UI helpers
+     ============================================================ */
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type + ' show';
+    setTimeout(function() { t.className = 'toast'; }, 3000);
+  }
+
+  /* ============================================================
+     Tab switching
+     ============================================================ */
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var panelId = 'panel' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab.slice(1);
+      var panel = document.getElementById(panelId);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  /* ============================================================
+     Public API (onclick handlers)
+     ============================================================ */
+  window._qa = {
+    goPage: function(p) {
+      var totalPages = Math.ceil(filteredQuestions.length / perPage) || 1;
+      if (p < 1 || p > totalPages) return;
+      currentPage = p;
+      renderPagination();
+      renderQuestions();
+    },
+    feedback: function(code, qId, type, btn) {
+      if (type === 'approve') {
+        submitFeedback(code, qId, 'approve', 'Approved');
+      } else if (type === 'flag_issue') {
+        var form = document.getElementById('form-' + code);
+        if (form) { form.classList.add('visible'); form.dataset.type = 'flag_issue'; }
+      }
+    },
+    showForm: function(code, qId) {
+      var form = document.getElementById('form-' + code);
+      if (form) { form.classList.add('visible'); form.dataset.type = 'suggest_edit'; }
+    },
+    hideForm: function(code) {
+      var el = document.getElementById('form-' + code);
+      if (el) el.classList.remove('visible');
+    },
+    submitForm: function(code, qId) {
+      var comment = document.getElementById('comment-' + code).value.trim();
+      if (!comment) { showToast('Please enter a comment', 'error'); return; }
+      var form = document.getElementById('form-' + code);
+      var type = (form && form.dataset.type) || 'suggest_edit';
+      submitFeedback(code, qId, type, comment);
+      if (form) form.classList.remove('visible');
+    },
+    setTriageFilter: function(f) {
+      triageFilter = f;
+      renderTriage();
+    },
+    triageAction: function(fbId, status) {
+      triageAction(fbId, status);
+    },
+    jumpToQuestion: function(code) {
+      // Switch to questions tab, clear filters, find the question
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('tabQuestions').classList.add('active');
+      document.getElementById('panelQuestions').classList.add('active');
+
+      // Reset filters
+      filters = { section: 'all', diff: 'all', status: 'all', search: code, batch: 'all' };
+      document.getElementById('searchBox').value = code;
+      document.getElementById('batchSelect').value = 'all';
+      document.querySelectorAll('.filter-btn[data-filter]').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.value === 'all');
+      });
+      applyFilters();
+    }
+  };
+
+  /* ============================================================
+     Filter click handlers
+     ============================================================ */
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var filterType = this.dataset.filter;
+      var value = this.dataset.value;
+      filters[filterType] = value;
+      document.querySelectorAll('.filter-btn[data-filter="' + filterType + '"]').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      applyFilters();
+    });
+  });
+
+  // Batch dropdown
+  document.getElementById('batchSelect').addEventListener('change', function() {
+    filters.batch = this.value;
+    applyFilters();
+  });
+
+  // Search handler
+  var searchTimer;
+  document.getElementById('searchBox').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    var val = this.value;
+    searchTimer = setTimeout(function() { filters.search = val; applyFilters(); }, 300);
+  });
+
+  /* ============================================================
+     Boot
+     ============================================================ */
+  loadAll();
+})();
+</script>
+</body>
+</html>
