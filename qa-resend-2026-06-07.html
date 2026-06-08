@@ -18,6 +18,11 @@
   details > summary { cursor:pointer; }
   details[open] > summary { color:#0369a1; }
   textarea { font-family: inherit; }
+  .save-flash { animation: flashGreen 1.2s ease-out; }
+  @keyframes flashGreen {
+    0%   { background:#bbf7d0; }
+    100% { background:transparent; }
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -58,7 +63,7 @@
 <main class="max-w-4xl mx-auto px-4 py-6">
 
   <div class="bg-amber-50 border border-amber-200 rounded p-4 mb-6 text-sm text-amber-900">
-    Use the buttons on each question. Notes are saved in this browser only. At the end, use <b>Export responses</b> and reply with the downloaded file or paste the exported text.
+    Use the buttons on each question. Notes auto-save in your browser as you type — click <b>Save note</b> for a quick confirmation. At the end, use <b>Export responses</b> at the top and reply with the downloaded file or paste the exported text.
   </div>
 
   <div id="anchor-row" class="flex flex-wrap gap-2 mb-6"></div>
@@ -82,6 +87,7 @@ let state = loadState();
 state.reviewer = state.reviewer || "Khushi";
 state.decisions = state.decisions || {};
 state.notes = state.notes || {};
+state.noteSavedAt = state.noteSavedAt || {};
 saveState(state);
 
 document.getElementById("reviewer-select").value = state.reviewer;
@@ -89,7 +95,6 @@ document.getElementById("reviewer-select").addEventListener("change", e => {
   state.reviewer = e.target.value; saveState(state);
 });
 
-// Build anchor chips
 const anchorRow = document.getElementById("anchor-row");
 QUESTIONS.forEach(q => {
   const a = document.createElement("a");
@@ -99,7 +104,6 @@ QUESTIONS.forEach(q => {
   anchorRow.appendChild(a);
 });
 
-// Render question cards
 const container = document.getElementById("questions");
 QUESTIONS.forEach((q, idx) => {
   const card = document.createElement("article");
@@ -107,7 +111,7 @@ QUESTIONS.forEach((q, idx) => {
   card.id = q.code;
   const opts = q.options;
   const optKeys = ["A","B","C","D"];
-  
+
   const optsHtml = optKeys.map(k => {
     const text = typeof opts[k] === "string" ? opts[k] : (opts[k] || "");
     const isKeyed = k === q.correct_answer;
@@ -124,7 +128,6 @@ QUESTIONS.forEach((q, idx) => {
     difficulty: q.difficulty_label === "HARD" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800",
     agentb: "bg-emerald-100 text-emerald-800"
   };
-
   const cogLabel = (q.category === "IN") ? "EMOTIONAL_STATE_INFERENCE" : (q.category || "INFERENCE");
   const diffBadge = q.difficulty_label + " G" + (q.difficulty_grade || "7");
 
@@ -167,11 +170,13 @@ QUESTIONS.forEach((q, idx) => {
 
     <label class="block text-xs uppercase tracking-wide text-slate-500 mb-1 no-print">Reviewer note / suggested change</label>
     <textarea data-note="${q.code}" rows="3" placeholder="Write notes here if needed." class="w-full border border-slate-300 rounded p-2 text-sm no-print"></textarea>
-    <p data-status="${q.code}" class="text-xs text-slate-500 mt-1 no-print">No decision saved yet.</p>
+    <div class="flex items-center gap-3 mt-2 no-print">
+      <button data-save="${q.code}" class="btn-save bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded text-xs font-semibold">Save note</button>
+      <p data-status="${q.code}" class="text-xs text-slate-500">No decision saved yet.</p>
+    </div>
   `;
   container.appendChild(card);
 
-  // Wire up decisions
   card.querySelectorAll(".btn-decision").forEach(b => {
     b.addEventListener("click", () => {
       const action = b.dataset.action;
@@ -182,34 +187,61 @@ QUESTIONS.forEach((q, idx) => {
       highlightActiveButton(q.code, action);
     });
   });
-  // Wire up note
   const noteEl = card.querySelector("textarea[data-note]");
   noteEl.value = state.notes[q.code] || "";
   noteEl.addEventListener("input", e => {
-    state.notes[q.code] = e.target.value; saveState(state);
-  });
-  // Initial status restore
-  if (state.decisions[q.code]) {
+    state.notes[q.code] = e.target.value;
+    state.noteSavedAt[q.code] = new Date().toISOString();
+    saveState(state);
     updateStatus(q.code);
+  });
+  const saveBtn = card.querySelector("button[data-save]");
+  saveBtn.addEventListener("click", () => {
+    state.notes[q.code] = noteEl.value;
+    state.noteSavedAt[q.code] = new Date().toISOString();
+    saveState(state);
+    const statusEl = card.querySelector(`[data-status="${q.code}"]`);
+    statusEl.classList.add("save-flash");
+    setTimeout(() => statusEl.classList.remove("save-flash"), 1300);
+    updateStatus(q.code);
+  });
+  if (state.decisions[q.code]) {
     highlightActiveButton(q.code, state.decisions[q.code]);
   }
+  updateStatus(q.code);
 });
 
 function escapeHtml(s) {
   if (s == null) return "";
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 }
+
+function formatTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+}
+
 function updateStatus(code) {
   const d = state.decisions[code];
+  const note = state.notes[code];
+  const savedAt = state.noteSavedAt[code];
   const el = document.querySelector(`[data-status="${code}"]`);
   if (!el) return;
-  if (!d) { el.textContent = "No decision saved yet."; el.className = "text-xs text-slate-500 mt-1 no-print"; }
-  else {
-    const labels = {approve:"Approved", flag:"Flagged for issue", edit:"Edit suggested", reject:"Rejected"};
-    el.textContent = "Decision: " + (labels[d] || d);
-    el.className = "text-xs font-medium mt-1 no-print " + ({approve:"text-emerald-700",flag:"text-red-700",edit:"text-orange-700",reject:"text-slate-700"})[d];
+  const labels = {approve:"Approved", flag:"Flagged for issue", edit:"Edit suggested", reject:"Rejected"};
+  let parts = [];
+  if (d) parts.push("Decision: " + (labels[d] || d));
+  if (note && note.trim()) parts.push("Note saved" + (savedAt ? " at " + formatTime(savedAt) : ""));
+  if (parts.length === 0) {
+    el.textContent = "No decision saved yet.";
+    el.className = "text-xs text-slate-500";
+  } else {
+    el.textContent = parts.join(" · ");
+    const decColor = d ? ({approve:"text-emerald-700",flag:"text-red-700",edit:"text-orange-700",reject:"text-slate-700"})[d] : "text-slate-600";
+    el.className = "text-xs font-medium " + decColor;
   }
 }
+
 function highlightActiveButton(code, action) {
   document.querySelectorAll(`[data-controls="${code}"] .btn-decision`).forEach(b => {
     const isActive = b.dataset.action === action;
@@ -217,19 +249,18 @@ function highlightActiveButton(code, action) {
       const colorMap = {approve:"bg-emerald-600 text-white border-emerald-600", flag:"bg-red-600 text-white border-red-600", edit:"bg-orange-600 text-white border-orange-600", reject:"bg-slate-700 text-white border-slate-700"};
       b.className = "btn-decision " + colorMap[action] + " px-4 py-2 rounded text-sm font-medium";
     } else {
-      // reset
       const reset = {approve:"bg-white border border-emerald-400 text-emerald-700 hover:bg-emerald-50", flag:"bg-white border border-red-400 text-red-700 hover:bg-red-50", edit:"bg-white border border-orange-400 text-orange-700 hover:bg-orange-50", reject:"bg-white border border-slate-400 text-slate-700 hover:bg-slate-100"};
       b.className = "btn-decision " + reset[b.dataset.action] + " px-4 py-2 rounded text-sm font-medium";
     }
   });
 }
+
 function updateReviewedCount() {
   const n = Object.keys(state.decisions).length;
   document.getElementById("reviewed-count").textContent = n;
 }
 updateReviewedCount();
 
-// Search
 document.getElementById("search").addEventListener("input", e => {
   const term = e.target.value.trim().toLowerCase();
   document.querySelectorAll(".q-card").forEach(card => {
@@ -238,7 +269,6 @@ document.getElementById("search").addEventListener("input", e => {
   });
 });
 
-// Export JSON
 document.getElementById("btn-export-json").addEventListener("click", () => {
   const payload = {
     reviewer: state.reviewer,
@@ -248,7 +278,8 @@ document.getElementById("btn-export-json").addEventListener("click", () => {
     decisions: QUESTIONS.map(q => ({
       code: q.code,
       decision: state.decisions[q.code] || null,
-      note: state.notes[q.code] || ""
+      note: state.notes[q.code] || "",
+      note_saved_at: state.noteSavedAt[q.code] || null
     }))
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
@@ -260,7 +291,6 @@ document.getElementById("btn-export-json").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-// Export CSV
 document.getElementById("btn-export-csv").addEventListener("click", () => {
   let csv = "code,decision,note\n";
   QUESTIONS.forEach(q => {
@@ -277,7 +307,6 @@ document.getElementById("btn-export-csv").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-// Print
 document.getElementById("btn-print").addEventListener("click", () => window.print());
 </script>
 
